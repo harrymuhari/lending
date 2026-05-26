@@ -46,8 +46,10 @@ public class LoanApplicationService {
 
             LoanApplication loanApplication = new LoanApplication();
             loanApplication.setLoanReferenceId(new BigInteger(loanReferenceId));
-            loanApplication.setCustomerId(loanApplicationRequest.getCustomerId());
-            loanApplication.setLoanId(loanApplicationRequest.getLoanProductId());
+            loanApplication.setCustomer(customer.get());
+            loanApplication.setLoanProduct(loanProduct.get());
+//            loanApplication.setCustomerId(loanApplicationRequest.getCustomerId());
+//            loanApplication.setLoanId(loanApplicationRequest.getLoanProductId());
             loanApplication.setPrincipalAmount(loanApplicationRequest.getLoanAmount());
             loanApplication.setInterestRate(interestRate);
             loanApplication.setPenaltyRate(penaltyRate);

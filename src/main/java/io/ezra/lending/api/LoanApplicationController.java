@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class LoanApplicationController {
     public final LoanApplicationService loanApplicationService;
+    public final LoanDisbursalService loanDisbursalService;
 
     // Do scoring prior to application
 
@@ -25,4 +26,8 @@ public class LoanApplicationController {
     }
 
     // Do loan approval here after application, to disburse the loan
+    @PostMapping("/disburse")
+    public LoanDisbursalRes disburseLoan(@RequestBody LoanDisbursalReq loanDisbursalReq){
+        return loanDisbursalService.disburseLoan(loanDisbursalReq);
+    }
 }

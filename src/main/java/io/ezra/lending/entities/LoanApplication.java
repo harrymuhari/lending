@@ -21,11 +21,19 @@ public class LoanApplication {
     @Column(name = "loan_reference_id", nullable = false)
     private BigInteger loanReferenceId;
 
-    @Column(name = "customer_id")
-    private Integer customerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "customer_id",
+            referencedColumnName = "id"
+    )
+    private Customer customer;
 
-    @Column(name = "loan_id")
-    private Integer loanId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "loan_id",
+            referencedColumnName = "product_code"
+    )
+    private LoanProduct loanProduct;
 
     @Column(name = "principal_amount", precision = 19, scale = 2)
     private BigDecimal principalAmount;
