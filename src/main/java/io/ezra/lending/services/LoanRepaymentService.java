@@ -12,6 +12,7 @@ import io.ezra.lending.repos.LoanProductRepo;
 import io.ezra.lending.repos.LoanRepaymentRepo;
 import io.ezra.lending.repos.LoanTransactionRepo;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -21,6 +22,7 @@ import static io.ezra.lending.services.LoanDisbursalService.generateTransactionR
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class LoanRepaymentService {
     final LoanApplicationRepo loanApplicationRepo;
     final LoanTransactionRepo loanTransactionRepo;
@@ -41,15 +43,15 @@ public class LoanRepaymentService {
 
             LoanApplication loanApplication = loanApplicationRepo.findById(loanRepaymentReq
                     .getLoanReferenceId()).orElseThrow();
-            BigDecimal disbursedAmount = loanApplication.getDisbursedAmount();
+            BigDecimal loanBalance = loanApplication.getLoanBalance();
             BigDecimal principalAmount = loanApplication.getPrincipalAmount();
             String transactionRefNumber = generateTransactionReference();
 
             // Check if loan is already defaulted, collect penalty
             if(loanApplication.getStatus().equalsIgnoreCase("DEFAULTED")){
-               BigDecimal penaltyAmount = disbursedAmount.multiply(BigDecimal.valueOf(loanApplication.getPenaltyRate()))
+               BigDecimal penaltyAmount = loanBalance.multiply(BigDecimal.valueOf(loanApplication.getPenaltyRate()))
                         .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-                disbursedAmount = disbursedAmount.subtract(penaltyAmount);
+                loanBalance = loanBalance.subtract(penaltyAmount);
                 LoanTransaction penaltyTransaction
                                 = loanDisbursalService.mapTransaction(loanApplication, "PENALTY", transactionRefNumber+"1",
                                         "", BigDecimal.ZERO, penaltyAmount, penaltyAmount, false);
@@ -60,33 +62,33 @@ public class LoanRepaymentService {
             // Collect fee
             LoanProduct loanProduct = loanProductRepo.findById(loanApplication.getLoanProduct().getProductCode()).orElseThrow();
             BigDecimal feeAmount = loanProduct.getLoanFee();
-            disbursedAmount = disbursedAmount.subtract(feeAmount);
+            loanBalance = loanBalance.subtract(feeAmount);
             LoanTransaction feeTransaction
                     = loanDisbursalService.mapTransaction(loanApplication, "FEE", transactionRefNumber+"1",
-                    "", BigDecimal.ZERO, feeAmount, disbursedAmount, false);
+                    "", BigDecimal.ZERO, feeAmount, loanBalance, false);
 
             loanTransactionRepo.save(feeTransaction);
 
             // Collect interest
             BigDecimal interestAmount = principalAmount.multiply(BigDecimal.valueOf(loanApplication.getInterestRate()))
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-            disbursedAmount = disbursedAmount.subtract(interestAmount);
+            loanBalance = loanBalance.subtract(interestAmount);
             LoanTransaction interestTransaction
                     = loanDisbursalService.mapTransaction(loanApplication, "INTEREST", transactionRefNumber+"1",
-                    "", BigDecimal.ZERO, interestAmount, disbursedAmount, false);
+                    "", BigDecimal.ZERO, interestAmount, loanBalance, false);
 
             loanTransactionRepo.save(interestTransaction);
 
             // Collect principal
-            disbursedAmount = disbursedAmount.subtract(principalAmount);
+            loanBalance = loanBalance.subtract(principalAmount);
             LoanTransaction principleTransaction
                     = loanDisbursalService.mapTransaction(loanApplication, "PRINCIPAL", transactionRefNumber+"1",
-                    "", BigDecimal.ZERO, principalAmount, disbursedAmount, false);
+                    "", BigDecimal.ZERO, principalAmount, loanBalance, false);
 
             loanTransactionRepo.save(principleTransaction);
 
             // Mark loan as closed if balance is zero
-            if(disbursedAmount.equals(0)){
+            if(loanBalance.equals(0)){
                 loanApplication.setStatus("CLOSED");
                 loanApplicationRepo.save(loanApplication);
             }
@@ -96,7 +98,7 @@ public class LoanRepaymentService {
         } catch(Exception ex){
             loanRepaymentRes.setStatusCode(98);
             loanRepaymentRes.setMessage("An exception occurred");
-            ex.printStackTrace();
+            log.info("Exception repaying loan {}", ex.getMessage());
         }
 
         return loanRepaymentRes;

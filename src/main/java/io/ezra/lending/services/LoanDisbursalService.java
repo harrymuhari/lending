@@ -34,62 +34,56 @@ public class LoanDisbursalService {
         loanDisbursalRes.setMessage("General failure");
 
         try {
-            Optional<LoanApplication> loanApplication = loanApplicationRepo.findById(loanDisbursalReq.getLoanReferenceId());
+            LoanApplication loanApplication = loanApplicationRepo.findById(loanDisbursalReq.getLoanReferenceId()).orElseThrow();
 
-            if(!loanApplication.get().getStatus().equalsIgnoreCase("APPROVED")){
+            if(!loanApplication.getStatus().equalsIgnoreCase("APPROVED")){
                 loanDisbursalRes.setStatusCode(94);
                 loanDisbursalRes.setMessage("Loan has not been approved");
 
                 return loanDisbursalRes;
             }
 
-            BigDecimal principal = loanApplication.get().getPrincipalAmount();
-            BigDecimal interestAmount = principal.multiply(BigDecimal.valueOf(loanApplication.get().getInterestRate()))
+            BigDecimal principal = loanApplication.getPrincipalAmount();
+            BigDecimal interestAmount = principal.multiply(BigDecimal.valueOf(loanApplication.getInterestRate()))
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-            Optional<LoanProduct> loanProduct = loanProductRepo.findById(loanApplication.get().getLoanProduct().getProductCode());
-            BigDecimal loanFee = loanProduct.get().getLoanFee();
+            LoanProduct loanProduct = loanProductRepo.findById(loanApplication.getLoanProduct().getProductCode()).orElseThrow();
+            BigDecimal loanFee = loanProduct.getLoanFee();
 
             BigDecimal disbursedAmount = principal.add(interestAmount).add(loanFee);
             String transactionRefNumber = generateTransactionReference();
 
             // post principal
-            LoanTransaction loanTransaction = loanApplication.map(
-                    application -> mapTransaction(application, "PRINCIPAL", transactionRefNumber+"1",
-                            "", principal, BigDecimal.ZERO, principal, false))
-                    .orElseThrow(() -> new RuntimeException("No loan application found"));
+            LoanTransaction loanTransaction = mapTransaction(loanApplication, "PRINCIPAL", transactionRefNumber+"1",
+                            "", principal, BigDecimal.ZERO, principal, false);
+
             loanTransactionRepo.save(loanTransaction);
 
             // post fee
             BigDecimal balanceAfterFee = principal.add(loanFee);
-            LoanTransaction feeTransaction = loanApplication.map(
-                            application -> mapTransaction(application, "FEE", transactionRefNumber+"2",
-                                    "", loanFee, BigDecimal.ZERO, balanceAfterFee, false))
-                    .orElseThrow(() -> new RuntimeException("No loan application found"));
+            LoanTransaction feeTransaction = mapTransaction(loanApplication, "FEE", transactionRefNumber+"2",
+                                    "", loanFee, BigDecimal.ZERO, balanceAfterFee, false);
             loanTransactionRepo.save(feeTransaction);
 
             // post interest
             BigDecimal balanceAfterInterest = balanceAfterFee.add(interestAmount);
-            LoanTransaction interestTransaction = loanApplication.map(
-                            application -> mapTransaction(application, "INTEREST", transactionRefNumber+"3",
-                                    "", interestAmount, BigDecimal.ZERO, balanceAfterInterest, false))
-                    .orElseThrow(() -> new RuntimeException("No loan application found"));
+            LoanTransaction interestTransaction = mapTransaction(loanApplication, "INTEREST", transactionRefNumber+"3",
+                                    "", interestAmount, BigDecimal.ZERO, balanceAfterInterest, false);
             loanTransactionRepo.save(interestTransaction);
 
             // if posting is successful, update loan status to ACTIVE
-            LoanApplication currentLoan = loanApplication.get();
-            currentLoan.setApprovalDate(LocalDate.now());
-            currentLoan.setDisbursementDate(LocalDate.now());
-            currentLoan.setStatus("ACTIVE");
-            currentLoan.setDisbursedAmount(disbursedAmount);
-            currentLoan.setApprovedBy(loanDisbursalReq.getApprovedBy());
-            loanApplicationRepo.save(currentLoan);
+            loanApplication.setApprovalDate(LocalDate.now());
+            loanApplication.setDisbursementDate(LocalDate.now());
+            loanApplication.setStatus("ACTIVE");
+            loanApplication.setDisbursedAmount(disbursedAmount);
+            loanApplication.setApprovedBy(loanDisbursalReq.getApprovedBy());
+            loanApplicationRepo.save(loanApplication);
 
             loanDisbursalRes.setStatusCode(00);
             loanDisbursalRes.setMessage("Loan disbursed successfully");
         } catch (Exception ex) {
             loanDisbursalRes.setStatusCode(98);
             loanDisbursalRes.setMessage("An exception occurred");
-            ex.printStackTrace();
+            log.info("Exception disbursing loan {}", ex.getMessage());
         }
 
         return loanDisbursalRes;

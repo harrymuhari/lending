@@ -71,6 +71,9 @@ public class LoanApplication {
     @Column(name = "approved_by")
     private String approvedBy;
 
+    @Column(name = "loan_balance")
+    private BigDecimal loanBalance;
+
     @PrePersist
     public void prePersist() {
 

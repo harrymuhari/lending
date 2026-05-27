@@ -22,6 +22,16 @@ public class LoanApplicationController {
     public final LoanDisbursalService loanDisbursalService;
 
     // Do scoring prior to application
+    // Check loan amount applied for is higher/lower than the configured limits
+    // Check if customer has any running loans, restrict on business rule e.g. no 2 similar active loans
+    // Check if customer has defaulted currently/previously
+    // Check with external providers e.g. credit bureaus to get score
+    // Check using biodata?
+    @PostMapping("/getScore")
+    public LoanScoreRes getScore(@RequestBody LoanScoreReq loanScoreReq){
+        return loanApplicationService.getScore(loanScoreReq);
+    }
+
 
     @PostMapping("/apply")
     public LoanApplicationRes applyLoan(@RequestBody LoanApplicationReq loanApplicationRequest){

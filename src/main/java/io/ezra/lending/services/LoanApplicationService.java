@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Random;
 
@@ -36,23 +37,24 @@ public class LoanApplicationService {
                     loanApplicationRequest.getCustomerId() + "" +
                     rand.nextInt(2);
 
-            Optional<Customer> customer = customerRepo.findById(loanApplicationRequest.getCustomerId());
-            String customerName = customer.map(Customer::getName).orElse("Customer");
+            Customer customer = customerRepo.findById(loanApplicationRequest.getCustomerId()).orElseThrow();
+            String customerName = customer.getName();
 
-            Optional<LoanProduct> loanProduct = loanProductRepo.findById(loanApplicationRequest.getLoanProductId());
-            String loanName = loanProduct.map(LoanProduct::getProductName).orElse("Generic Loan");
-            Integer interestRate = loanProduct.map(LoanProduct::getInterestRate).orElse(10);
-            Integer penaltyRate = loanProduct.map(LoanProduct::getPenaltyRate).orElse(10);
+            LoanProduct loanProduct = loanProductRepo.findById(loanApplicationRequest.getLoanProductId()).orElseThrow();
+            String loanName = loanProduct.getProductName();
+            Integer interestRate = loanProduct.getInterestRate();
+            Integer penaltyRate = loanProduct.getPenaltyRate();
 
             LoanApplication loanApplication = new LoanApplication();
             loanApplication.setLoanReferenceId(new BigInteger(loanReferenceId));
-            loanApplication.setCustomer(customer.get());
-            loanApplication.setLoanProduct(loanProduct.get());
-//            loanApplication.setCustomerId(loanApplicationRequest.getCustomerId());
-//            loanApplication.setLoanId(loanApplicationRequest.getLoanProductId());
+            loanApplication.setCustomer(customer);
+            loanApplication.setLoanProduct(loanProduct);
             loanApplication.setPrincipalAmount(loanApplicationRequest.getLoanAmount());
             loanApplication.setInterestRate(interestRate);
             loanApplication.setPenaltyRate(penaltyRate);
+
+            LocalDate maturityDate = LocalDate.now().plusMonths(loanProduct.getTenure());
+            loanApplication.setMaturityDate(maturityDate);
 
             LoanApplication savedLoanApplication = loanApplicationRepo.save(loanApplication);
 
@@ -66,7 +68,7 @@ public class LoanApplicationService {
         } catch(Exception ex){
             loanApplicationRes.setStatusCode(98);
             loanApplicationRes.setMessage("An exception occurred");
-            ex.printStackTrace();
+            log.info("Exception applying loan {}", ex.getMessage());
         }
 
         return loanApplicationRes;

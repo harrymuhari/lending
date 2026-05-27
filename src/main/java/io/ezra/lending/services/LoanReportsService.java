@@ -1,7 +1,9 @@
 package io.ezra.lending.services;
 
+import io.ezra.lending.dtos.responses.LoanBalanceRes;
 import io.ezra.lending.dtos.responses.LoanReviewEntity;
 import io.ezra.lending.dtos.responses.LoanReviewRes;
+import io.ezra.lending.dtos.responses.LoanStatementRes;
 import io.ezra.lending.entities.LoanApplication;
 import io.ezra.lending.repos.LoanApplicationRepo;
 import io.ezra.lending.repos.LoanTransactionRepo;
@@ -61,5 +63,13 @@ public class LoanReportsService {
         }
 
         return loanReviewRes;
+    }
+
+    public LoanBalanceRes fetchLoanBalance(String loanReferenceId){
+        return null;
+    }
+
+    public LoanStatementRes fetchLoanStatement(String loanReferenceId){
+        return null;
     }
 }
