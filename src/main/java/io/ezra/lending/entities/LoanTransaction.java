@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 
 @Getter
@@ -21,7 +22,7 @@ public class LoanTransaction {
     private String transactionReferenceId;
 
     @Column(name = "loan_reference_id", nullable = false)
-    private Integer loanReferenceId;
+    private BigInteger loanReferenceId;
 
     @Column(name = "transaction_type", length = 20)
     private String transactionType;

@@ -65,6 +65,12 @@ public class LoanApplication {
     @Column(name = "defaulted_on")
     private LocalDate defaultedOn;
 
+    @Column(name = "disbursed_amount")
+    private BigDecimal disbursedAmount;
+
+    @Column(name = "approved_by")
+    private String approvedBy;
+
     @PrePersist
     public void prePersist() {
 

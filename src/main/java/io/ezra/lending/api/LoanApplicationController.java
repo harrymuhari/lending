@@ -1,8 +1,11 @@
 package io.ezra.lending.api;
 
 import io.ezra.lending.dtos.requests.LoanApplicationReq;
+import io.ezra.lending.dtos.requests.LoanDisbursalReq;
 import io.ezra.lending.dtos.responses.LoanApplicationRes;
+import io.ezra.lending.dtos.responses.LoanDisbursalRes;
 import io.ezra.lending.services.LoanApplicationService;
+import io.ezra.lending.services.LoanDisbursalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
