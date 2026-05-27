@@ -95,6 +95,10 @@ public class LoanRepaymentService {
 
             loanRepaymentRes.setStatusCode(00);
             loanRepaymentRes.setMessage("Loan repaid successfully");
+
+            // Publish notification to topic here targeting applicant notifying them their loan repayment has been processed successfully
+            // Publish notification to topic here targeting back office that a loan repayment was successful
+            // Add more info in case the loan has been fully paid i.e status = CLOSED
         } catch(Exception ex){
             loanRepaymentRes.setStatusCode(98);
             loanRepaymentRes.setMessage("An exception occurred");

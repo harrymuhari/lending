@@ -29,7 +29,7 @@ public class LoanPenaltyService {
         for(LoanApplication loanApplication: loanApplications){
             // Send notifications for any loans approaching repayment day, 2 days prior
             if(ChronoUnit.DAYS.between(now, loanApplication.getMaturityDate()) <= 2){
-                // Publish notification to topic here
+                // Publish notification to topic here telling the customer that their next repayment is due in 2 days, include full amount to be repaid
             }
 
             // Get defaulted loans
@@ -52,5 +52,7 @@ public class LoanPenaltyService {
                 "", penaltyAmount, BigDecimal.ZERO, penaltyAmount, false);
 
         loanTransactionRepo.save(penaltyTransaction);
+
+        // Publish notification to topic here notifying the customer that a penalty has been applied to their outstanding balance due to non payment
     }
 }

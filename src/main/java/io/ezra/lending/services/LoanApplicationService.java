@@ -61,6 +61,8 @@ public class LoanApplicationService {
             if (savedLoanApplication.getLoanReferenceId() != null) {
                 loanApplicationRes.setStatusCode(00);
                 loanApplicationRes.setMessage("Loan application successful");
+
+                // Publish notification to topic here targeting back office to review the loan
             } else {
                 loanApplicationRes.setStatusCode(97);
                 loanApplicationRes.setMessage("Loan application failed");

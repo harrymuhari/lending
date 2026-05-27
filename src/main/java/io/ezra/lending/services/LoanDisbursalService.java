@@ -80,6 +80,8 @@ public class LoanDisbursalService {
 
             loanDisbursalRes.setStatusCode(00);
             loanDisbursalRes.setMessage("Loan disbursed successfully");
+
+            // Publish notification to topic here tageting applicant advising them that their loan has been disbursed
         } catch (Exception ex) {
             loanDisbursalRes.setStatusCode(98);
             loanDisbursalRes.setMessage("An exception occurred");

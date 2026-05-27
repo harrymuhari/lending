@@ -9,6 +9,7 @@ import io.ezra.lending.repos.LoanApplicationRepo;
 import io.ezra.lending.repos.LoanTransactionRepo;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class LoanReportsService {
     public final LoanApplicationRepo loanApplicationRepo;
 
@@ -59,7 +61,7 @@ public class LoanReportsService {
         } catch (Exception ex) {
             loanReviewRes.setStatusCode(98);
             loanReviewRes.setMessage("An exception occurred");
-            ex.printStackTrace();
+            log.info("Exception pulling loans {}", ex.getMessage());
         }
 
         return loanReviewRes;
