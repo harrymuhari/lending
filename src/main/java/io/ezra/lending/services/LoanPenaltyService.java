@@ -55,7 +55,11 @@ public class LoanPenaltyService {
 
         loanTransactionRepo.save(penaltyTransaction);
 
-        loanApplication.setDefaultedOn(LocalDate.now());
+        if(loanApplication.getDefaultedOn() != null) {
+            loanApplication.setDefaultedOn(LocalDate.now());
+        }
+        loanApplication.setLoanBalance(loanBalance.add(penaltyAmount));
+
         loanApplicationRepo.save(loanApplication);
 
         // Publish notification to topic here notifying the customer that a penalty has been applied to their outstanding balance due to non payment
