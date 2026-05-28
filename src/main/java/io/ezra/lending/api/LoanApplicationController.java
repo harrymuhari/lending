@@ -2,8 +2,10 @@ package io.ezra.lending.api;
 
 import io.ezra.lending.dtos.requests.LoanApplicationReq;
 import io.ezra.lending.dtos.requests.LoanDisbursalReq;
+import io.ezra.lending.dtos.requests.LoanScoreReq;
 import io.ezra.lending.dtos.responses.LoanApplicationRes;
 import io.ezra.lending.dtos.responses.LoanDisbursalRes;
+import io.ezra.lending.dtos.responses.LoanScoreRes;
 import io.ezra.lending.services.LoanApplicationService;
 import io.ezra.lending.services.LoanDisbursalService;
 import lombok.RequiredArgsConstructor;

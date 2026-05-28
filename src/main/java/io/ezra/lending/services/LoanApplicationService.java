@@ -1,13 +1,16 @@
 package io.ezra.lending.services;
 
 import io.ezra.lending.dtos.requests.LoanApplicationReq;
+import io.ezra.lending.dtos.requests.LoanScoreReq;
 import io.ezra.lending.dtos.responses.LoanApplicationRes;
+import io.ezra.lending.dtos.responses.LoanScoreRes;
 import io.ezra.lending.entities.Customer;
 import io.ezra.lending.entities.LoanApplication;
 import io.ezra.lending.entities.LoanProduct;
 import io.ezra.lending.repos.CustomerRepo;
 import io.ezra.lending.repos.LoanApplicationRepo;
 import io.ezra.lending.repos.LoanProductRepo;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,7 @@ public class LoanApplicationService {
     public final CustomerRepo customerRepo;
     public final LoanProductRepo loanProductRepo;
 
+    @Transactional
     public LoanApplicationRes applyLoan(LoanApplicationReq loanApplicationRequest){
         LoanApplicationRes loanApplicationRes = new LoanApplicationRes();
         loanApplicationRes.setStatusCode(99);
@@ -52,8 +56,11 @@ public class LoanApplicationService {
             loanApplication.setPrincipalAmount(loanApplicationRequest.getLoanAmount());
             loanApplication.setInterestRate(interestRate);
             loanApplication.setPenaltyRate(penaltyRate);
+            loanApplication.setStatus("PENDING");
+            loanApplication.setTenure(loanProduct.getTenure());
 
-            LocalDate maturityDate = LocalDate.now().plusMonths(loanProduct.getTenure());
+            LocalDate maturityDate = LocalDate.now().plusMonths(loanProduct.getTenure())
+                    .plusDays(loanProduct.getDefaultAfter());
             loanApplication.setMaturityDate(maturityDate);
 
             LoanApplication savedLoanApplication = loanApplicationRepo.save(loanApplication);
@@ -74,5 +81,10 @@ public class LoanApplicationService {
         }
 
         return loanApplicationRes;
+    }
+
+    public LoanScoreRes getScore(LoanScoreReq loanScoreReq){
+
+        return null;
     }
 }

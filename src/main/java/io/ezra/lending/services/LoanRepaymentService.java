@@ -11,9 +11,11 @@ import io.ezra.lending.repos.LoanApplicationRepo;
 import io.ezra.lending.repos.LoanProductRepo;
 import io.ezra.lending.repos.LoanRepaymentRepo;
 import io.ezra.lending.repos.LoanTransactionRepo;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -30,6 +32,7 @@ public class LoanRepaymentService {
     final LoanProductRepo loanProductRepo;
     final LoanDisbursalService loanDisbursalService;
 
+    @Transactional
     public LoanRepaymentRes repayLoan(LoanRepaymentReq loanRepaymentReq){
         LoanRepaymentRes loanRepaymentRes = new LoanRepaymentRes();
         loanRepaymentRes.setStatusCode(99);
@@ -64,7 +67,7 @@ public class LoanRepaymentService {
             BigDecimal feeAmount = loanProduct.getLoanFee();
             loanBalance = loanBalance.subtract(feeAmount);
             LoanTransaction feeTransaction
-                    = loanDisbursalService.mapTransaction(loanApplication, "FEE", transactionRefNumber+"1",
+                    = loanDisbursalService.mapTransaction(loanApplication, "FEE", transactionRefNumber+"2",
                     "", BigDecimal.ZERO, feeAmount, loanBalance, false);
 
             loanTransactionRepo.save(feeTransaction);
@@ -74,7 +77,7 @@ public class LoanRepaymentService {
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
             loanBalance = loanBalance.subtract(interestAmount);
             LoanTransaction interestTransaction
-                    = loanDisbursalService.mapTransaction(loanApplication, "INTEREST", transactionRefNumber+"1",
+                    = loanDisbursalService.mapTransaction(loanApplication, "INTEREST", transactionRefNumber+"3",
                     "", BigDecimal.ZERO, interestAmount, loanBalance, false);
 
             loanTransactionRepo.save(interestTransaction);
@@ -82,7 +85,7 @@ public class LoanRepaymentService {
             // Collect principal
             loanBalance = loanBalance.subtract(principalAmount);
             LoanTransaction principleTransaction
-                    = loanDisbursalService.mapTransaction(loanApplication, "PRINCIPAL", transactionRefNumber+"1",
+                    = loanDisbursalService.mapTransaction(loanApplication, "PRINCIPAL", transactionRefNumber+"4",
                     "", BigDecimal.ZERO, principalAmount, loanBalance, false);
 
             loanTransactionRepo.save(principleTransaction);
@@ -102,6 +105,7 @@ public class LoanRepaymentService {
         } catch(Exception ex){
             loanRepaymentRes.setStatusCode(98);
             loanRepaymentRes.setMessage("An exception occurred");
+            ex.printStackTrace();
             log.info("Exception repaying loan {}", ex.getMessage());
         }
 

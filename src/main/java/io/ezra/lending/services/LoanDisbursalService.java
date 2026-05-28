@@ -76,6 +76,7 @@ public class LoanDisbursalService {
             loanApplication.setStatus("ACTIVE");
             loanApplication.setDisbursedAmount(disbursedAmount);
             loanApplication.setApprovedBy(loanDisbursalReq.getApprovedBy());
+            loanApplication.setLoanBalance(balanceAfterInterest);
             loanApplicationRepo.save(loanApplication);
 
             loanDisbursalRes.setStatusCode(00);
@@ -85,6 +86,7 @@ public class LoanDisbursalService {
         } catch (Exception ex) {
             loanDisbursalRes.setStatusCode(98);
             loanDisbursalRes.setMessage("An exception occurred");
+            ex.printStackTrace();
             log.info("Exception disbursing loan {}", ex.getMessage());
         }
 
