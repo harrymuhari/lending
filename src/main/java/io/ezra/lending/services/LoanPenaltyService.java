@@ -4,6 +4,7 @@ import io.ezra.lending.entities.LoanApplication;
 import io.ezra.lending.entities.LoanTransaction;
 import io.ezra.lending.repos.LoanApplicationRepo;
 import io.ezra.lending.repos.LoanTransactionRepo;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -17,10 +18,11 @@ import static io.ezra.lending.services.LoanDisbursalService.generateTransactionR
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class LoanPenaltyService {
-    LoanApplicationRepo loanApplicationRepo;
-    LoanDisbursalService loanDisbursalService;
-    LoanTransactionRepo loanTransactionRepo;
+    public final LoanApplicationRepo loanApplicationRepo;
+    public final LoanDisbursalService loanDisbursalService;
+    public final LoanTransactionRepo loanTransactionRepo;
 
     public void processCronActivities(){
         List<LoanApplication> loanApplications = loanApplicationRepo.findAll();
@@ -52,6 +54,9 @@ public class LoanPenaltyService {
                 "", penaltyAmount, BigDecimal.ZERO, penaltyAmount, false);
 
         loanTransactionRepo.save(penaltyTransaction);
+
+        loanApplication.setDefaultedOn(LocalDate.now());
+        loanApplicationRepo.save(loanApplication);
 
         // Publish notification to topic here notifying the customer that a penalty has been applied to their outstanding balance due to non payment
     }

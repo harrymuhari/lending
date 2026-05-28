@@ -90,6 +90,7 @@ public class LoanRepaymentService {
 
             loanTransactionRepo.save(principleTransaction);
 
+            loanApplication.setLoanBalance(loanBalance);
             // Mark loan as closed if balance is zero
             if(loanBalance.equals(0)){
                 loanApplication.setStatus("CLOSED");
